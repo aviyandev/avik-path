@@ -2,6 +2,6 @@
 /.idea
 /.vscode
 .DS_Store
+composer.lock
 publish.ps1
 publish.sh
-composer.lock
