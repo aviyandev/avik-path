@@ -12,19 +12,21 @@ final class Dispatcher
     public function dispatch(string $method, string $uri, RouteCollection $routes): array
     {
         $allowed = [];
+        $uri = '/' . trim($uri, '/');
 
         foreach ($routes->all() as $route) {
             if ($route->matches($method, $uri)) {
                 return [$route, $route->parameters($uri)];
             }
 
-            if ($route->path === $uri) {
-                $allowed[] = $route->method;
+            // Check if path matches any other method for 405
+            if ($route->matchesPath($uri)) {
+                $allowed = array_merge($allowed, $route->methods);
             }
         }
 
         if ($allowed) {
-            throw new MethodNotAllowedException($allowed);
+            throw new MethodNotAllowedException(array_unique($allowed));
         }
 
         throw new RouteNotFoundException();
