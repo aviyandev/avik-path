@@ -4,3 +4,4 @@
 .DS_Store
 publish.ps1
 publish.sh
+composer.lock
