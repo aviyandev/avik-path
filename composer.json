@@ -1,0 +1,17 @@
+{
+    "name": "avik/path",
+    "description": "Routing engine for the Avik framework",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Avik\\Path\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=8.1",
+        "avik/seed": "^1.0",
+        "avik/flow": "^1.0"
+    },
+    "minimum-stability": "stable"
+}
