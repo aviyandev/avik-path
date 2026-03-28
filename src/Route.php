@@ -9,13 +9,13 @@ final class Route
     private array $wheres = [];
 
     public function __construct(
-        public array $methods,
+        public readonly array $methods,
         public string $path,
         public mixed $action,
         public ?string $name = null,
         public array $middleware = []
     ) {
-        $this->path = '/' . ltrim($path, '/');
+        $this->path = '/' . ltrim($this->path, '/');
     }
 
     public function name(string $name): self
@@ -57,7 +57,7 @@ final class Route
 
     public function matches(string $method, string $uri): bool
     {
-        if (!in_array(strtoupper($method), $this->methods)) {
+        if (!in_array(strtoupper($method), $this->methods, true)) {
             return false;
         }
 
@@ -72,22 +72,27 @@ final class Route
 
     public function parameters(string $uri): array
     {
-        preg_match_all('#\{([^/]+)\}#', $this->path, $keys);
         $pattern = $this->compilePattern();
-
-        if (preg_match('#^' . $pattern . '$#', $uri, $values)) {
-            array_shift($values);
-            return array_combine($keys[1], $values) ?: [];
+        if (!preg_match('#^' . $pattern . '$#', $uri, $matches)) {
+            return [];
         }
 
-        return [];
+        preg_match_all('#\{([^}]+)\}#', $this->path, $keys);
+        array_shift($matches); // Remove full match
+
+        return array_combine($keys[1] ?? [], $matches) ?: [];
     }
 
     private function compilePattern(): string
     {
-        return preg_replace_callback('#\{([^/]+)\}#', function ($matches) {
-            $parameter = $matches[1];
-            return '(' . ($this->wheres[$parameter] ?? '[^/]+') . ')';
-        }, $this->path);
+        return preg_replace_callback(
+            '#\{([^}]+)\}#',
+            function (array $matches): string {
+                $param = $matches[1];
+                $regex = $this->wheres[$param] ?? '[^/]+';
+                return '(' . $regex . ')';
+            },
+            $this->path
+        );
     }
 }
